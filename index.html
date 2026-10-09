@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Protokolant Paczkomatów A2</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script src="https://unpkg.com/@pdf-lib/fontkit@0.0.4/dist/fontkit.umd.min.js"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen pb-16 font-sans">
+
+  <!-- Pasek górny -->
+  <header class="sticky top-0 z-50 bg-slate-800/95 backdrop-blur border-b border-slate-700 px-4 py-3 flex justify-between items-center shadow-lg">
+    <div>
+      <h1 class="text-base font-bold text-amber-400">⚡ Protokolant A2</h1>
+      <p class="text-[11px] text-slate-400">InPost • Sonel MPI-540</p>
+    </div>
+    <div class="flex gap-2">
+      <button onclick="autouzupelnij()" class="bg-indigo-600 active:bg-indigo-700 text-xs font-semibold px-3 py-2 rounded-lg shadow">
+        🪄 Dopełnij
+      </button>
+      <button onclick="generujPDF()" id="btnGen" class="bg-emerald-600 active:bg-emerald-700 text-xs font-semibold px-3 py-2 rounded-lg shadow">
+        📄 Pobierz PDF
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-xl mx-auto px-3 py-4 space-y-4">
+
+    <!-- Wybór pliku szablonu -->
+    <div id="szablonBox" class="bg-slate-800 border border-slate-700 p-3 rounded-xl text-xs space-y-1">
+      <div class="flex justify-between items-center">
+        <span class="text-slate-300 font-medium">Szablon bazowy:</span>
+        <span id="szablonStatus" class="text-amber-400 font-bold">Wybierz szablon.pdf</span>
+      </div>
+      <input type="file" id="pdfFileInput" accept="application/pdf" class="block w-full text-slate-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-amber-600 file:text-white cursor-pointer">
+    </div>
+
+    <!-- 1. Identyfikacja maszyny -->
+    <div class="bg-slate-800 border border-slate-700 rounded-xl p-3.5 shadow">
+      <h2 class="text-xs font-bold text-amber-400 mb-2.5 uppercase tracking-wider">1. Identyfikacja Paczkomatu</h2>
+      <div class="grid grid-cols-2 gap-2 text-xs">
+        <div>
+          <label class="block text-slate-400 text-[10px]">Numer protokołu</label>
+          <input type="text" id="nr_protokolu" value="WAW 852 M" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-white font-mono">
+        </div>
+        <div>
+          <label class="block text-slate-400 text-[10px]">Data pomiaru</label>
+          <input type="text" id="data_pomiaru" value="10/09/2026 r." class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-white">
+        </div>
+        <div class="col-span-2">
+          <label class="block text-slate-400 text-[10px]">Numer seryjny maszyny</label>
+          <input type="text" id="nr_seryjny" value="25/CQU121000111" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-amber-300 font-mono font-bold">
+        </div>
+        <div class="col-span-2">
+          <label class="block text-slate-400 text-[10px]">Typ maszyny (tabliczka)</label>
+          <input type="text" id="typ_maszyny" value="QR NFM 8.4A0000W5VYY" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-white font-mono">
+        </div>
+        <div class="col-span-2">
+          <label class="block text-slate-400 text-[10px]">Adres instalacji</label>
+          <input type="text" id="adres" value="02-495 WARSZAWA Michałowicza 19" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-white">
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Zasilanie i Środowisko -->
+    <div class="bg-slate-800 border border-slate-700 rounded-xl p-3.5 shadow">
+      <h2 class="text-xs font-bold text-amber-400 mb-2.5 uppercase tracking-wider">2. Zasilanie i Środowisko</h2>
+      <div class="grid grid-cols-3 gap-2 text-xs">
+        <div>
+          <label class="block text-slate-400 text-[10px]">Napięcie [V]</label>
+          <input type="text" inputmode="decimal" id="napiecie" value="221,7" oninput="waliduj()" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 font-mono font-bold text-white">
+          <span id="v_status" class="text-[9px] text-emerald-400 mt-0.5 block">Norma: 207-253V</span>
+        </div>
+        <div>
+          <label class="block text-slate-400 text-[10px]">Temp. [°C]</label>
+          <input type="text" inputmode="decimal" id="temp" value="27,9" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-white">
+        </div>
+        <div>
+          <label class="block text-slate-400 text-[10px]">Wilgotność [%]</label>
+          <input type="text" inputmode="decimal" id="wilg" value="51,5" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-white">
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Ciągłość połączeń wyrównawczych -->
+    <div class="bg-slate-800 border border-slate-700 rounded-xl p-3.5 shadow">
+      <div class="flex justify-between items-center mb-2">
+        <h2 class="text-xs font-bold text-amber-400 uppercase tracking-wider">3. Ciągłość PE (Norma &lt; 0.20Ω)</h2>
+        <button onclick="przywrocPE()" class="text-[10px] text-indigo-400 hover:text-indigo-300">Wstaw wzorzec</button>
+      </div>
+      <div class="grid grid-cols-4 gap-2 text-xs" id="peGrid"></div>
+    </div>
+
+    <!-- 4. Uziemienie 3-punktowe -->
+    <div class="bg-slate-800 border border-slate-700 rounded-xl p-3.5 shadow">
+      <h2 class="text-xs font-bold text-amber-400 mb-2.5 uppercase tracking-wider">4. Uziemienie (Norma &le; 10Ω)</h2>
+      <div class="grid grid-cols-3 gap-2 text-xs mb-2.5">
+        <div>
+          <label class="block text-slate-400 text-[10px]">Pomiar 1 [Ω]</label>
+          <input type="text" inputmode="decimal" id="u1" value="6,78" oninput="obliczUziemienie()" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-white font-mono">
+        </div>
+        <div>
+          <label class="block text-slate-400 text-[10px]">Pomiar 2 [Ω]</label>
+          <input type="text" inputmode="decimal" id="u2" value="6,80" oninput="obliczUziemienie()" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-white font-mono">
+        </div>
+        <div>
+          <label class="block text-slate-400 text-[10px]">Pomiar 3 [Ω]</label>
+          <input type="text" inputmode="decimal" id="u3" value="6,80" oninput="obliczUziemienie()" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-white font-mono">
+        </div>
+      </div>
+      <div class="bg-slate-900 p-2.5 rounded border border-slate-700 flex justify-around text-center text-xs">
+        <div>
+          <span class="text-slate-400 block text-[9px]">Średnia Rx:</span>
+          <span id="rx_val" class="font-bold text-amber-400 font-mono">6,79 Ω</span>
+        </div>
+        <div>
+          <span class="text-slate-400 block text-[9px]">Współczynnik:</span>
+          <span class="font-bold text-slate-300 font-mono">1.2</span>
+        </div>
+        <div>
+          <span class="text-slate-400 block text-[9px]">Wynik R (Rx × 1.2):</span>
+          <span id="r_val" class="font-bold text-emerald-400 font-mono text-sm">8,15 Ω</span>
+        </div>
+      </div>
+      <div id="u_alert" class="hidden mt-2 p-1.5 rounded bg-rose-950 border border-rose-600 text-rose-300 text-[10px] font-bold text-center">
+        ⚠️ Rezystancja > 10.0 Ω! Należy rozbudować uziom.
+      </div>
+    </div>
+
+    <!-- 5. Ochrona RCD i Pętla Zs -->
+    <div class="bg-slate-800 border border-slate-700 rounded-xl p-3.5 shadow">
+      <h2 class="text-xs font-bold text-amber-400 mb-2.5 uppercase tracking-wider">5. Ochrona RCD i Pętla zwarcia</h2>
+      <div class="grid grid-cols-2 gap-2 text-xs mb-3">
+        <div class="bg-slate-900/60 p-2 rounded border border-slate-700">
+          <span class="font-bold text-slate-300 block mb-1 text-[11px]">RCD Maszyna</span>
+          <div class="space-y-1.5">
+            <div>
+              <span class="text-[9px] text-slate-400">Czas tΔ (x5 / x1) [ms]:</span>
+              <div class="flex gap-1">
+                <input type="text" id="rcd_m_tx5" value="6" class="w-1/2 bg-slate-900 border border-slate-700 rounded p-1 text-center font-mono">
+                <input type="text" id="rcd_m_tx1" value="18" class="w-1/2 bg-slate-900 border border-slate-700 rounded p-1 text-center font-mono">
+              </div>
+            </div>
+            <div>
+              <span class="text-[9px] text-slate-400">Prąd IΔn [mA]:</span>
+              <input type="text" inputmode="decimal" id="rcd_m_i" value="17,1" class="w-full bg-slate-900 border border-slate-700 rounded p-1 font-mono">
+            </div>
+          </div>
+        </div>
+        <div class="bg-slate-900/60 p-2 rounded border border-slate-700">
+          <span class="font-bold text-slate-300 block mb-1 text-[11px]">RCD Przyłącze</span>
+          <div class="space-y-1.5">
+            <div>
+              <span class="text-[9px] text-slate-400">Czas tΔ (x5 / x1) [ms]:</span>
+              <div class="flex gap-1">
+                <input type="text" id="rcd_p_tx5" value="16" class="w-1/2 bg-slate-900 border border-slate-700 rounded p-1 text-center font-mono">
+                <input type="text" id="rcd_p_tx1" value="22" class="w-1/2 bg-slate-900 border border-slate-700 rounded p-1 text-center font-mono">
+              </div>
+            </div>
+            <div>
+              <span class="text-[9px] text-slate-400">Prąd IΔn [mA]:</span>
+              <input type="text" inputmode="decimal" id="rcd_p_i" value="21,0" class="w-full bg-slate-900 border border-slate-700 rounded p-1 font-mono">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <label class="block text-slate-400 text-[10px]">Pętla zwarcia Zs [Ω] (Wymóg &le; 2.95Ω)</label>
+        <input type="text" inputmode="decimal" id="zs" value="1,18" oninput="waliduj()" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 font-mono font-bold text-white text-xs">
+        <span id="zs_status" class="text-[9px] text-emerald-400 mt-0.5 block">Zs &le; 2.95 Ω (OK)</span>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const toNum = (val) => parseFloat(String(val).replace(',', '.')) || 0;
+    const toStr = (num, dec=2) => Number(num).toFixed(dec).replace('.', ',');
+
+    // Inicjalizacja pól ciągłości PE
+    const grid = document.getElementById("peGrid");
+    const defaultPE = ["0,18", "0,24", "0,14", "0,07", "0,08", "0,06", "0,09", "0,05"];
+    for (let i = 0; i < 8; i++) {
+      grid.innerHTML += `
+        <div>
+          <span class="text-[9px] text-slate-400">Poz. ${i + 1}</span>
+          <input type="text" inputmode="decimal" id="pe_${i}" value="${defaultPE[i]}" oninput="waliduj()" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-center font-mono font-bold text-xs">
+        </div>
+      `;
+    }
+
+    function przywrocPE() {
+      defaultPE.forEach((val, i) => document.getElementById(`pe_${i}`).value = val);
+      waliduj();
+    }
+
+    function waliduj() {
+      const v = toNum(document.getElementById("napiecie").value);
+      const vSpan = document.getElementById("v_status");
+      const vInput = document.getElementById("napiecie");
+      if (v < 207 || v > 253) {
+        vInput.className = "w-full bg-rose-950 border border-rose-500 rounded p-1.5 font-mono font-bold text-rose-200";
+        vSpan.innerText = "❌ Poza normą 230V ±10%!";
+        vSpan.className = "text-[9px] text-rose-400 mt-0.5 block font-bold";
+      } else {
+        vInput.className = "w-full bg-slate-900 border border-slate-700 rounded p-1.5 font-mono font-bold text-white";
+        vSpan.innerText = "Norma: 207-253V (OK)";
+        vSpan.className = "text-[9px] text-emerald-400 mt-0.5 block";
+      }
+
+      const zs = toNum(document.getElementById("zs").value);
+      const zsSpan = document.getElementById("zs_status");
+      const zsInput = document.getElementById("zs");
+      if (zs > 2.95) {
+        zsInput.className = "w-full bg-rose-950 border border-rose-500 rounded p-1.5 font-mono font-bold text-rose-200 text-xs";
+        zsSpan.innerText = "❌ Zs przekracza dopuszczalne 2.95 Ω!";
+        zsSpan.className = "text-[9px] text-rose-400 mt-0.5 block font-bold";
+      } else {
+        zsInput.className = "w-full bg-slate-900 border border-slate-700 rounded p-1.5 font-mono font-bold text-white text-xs";
+        zsSpan.innerText = "Zs ≤ 2.95 Ω (OK)";
+        zsSpan.className = "text-[9px] text-emerald-400 mt-0.5 block";
+      }
+
+      for (let i = 0; i < 8; i++) {
+        const el = document.getElementById(`pe_${i}`);
+        if (toNum(el.value) > 0.3) {
+          el.className = "w-full bg-rose-950 border border-rose-500 rounded p-1 text-center font-mono font-bold text-xs text-rose-200";
+        } else {
+          el.className = "w-full bg-slate-900 border border-slate-700 rounded p-1 text-center font-mono font-bold text-xs";
+        }
+      }
+    }
+
+    function obliczUziemienie() {
+      const u1 = toNum(document.getElementById("u1").value);
+      const u2 = toNum(document.getElementById("u2").value);
+      const u3 = toNum(document.getElementById("u3").value);
+      const rx = (u1 + u2 + u3) / 3;
+      const r = rx * 1.2;
+
+      document.getElementById("rx_val").innerText = toStr(rx) + " Ω";
+      const rEl = document.getElementById("r_val");
+      rEl.innerText = toStr(r) + " Ω";
+
+      const alertBox = document.getElementById("u_alert");
+      if (r > 10.0) {
+        rEl.className = "font-bold text-rose-500 font-mono text-sm";
+        alertBox.classList.remove("hidden");
+      } else {
+        rEl.className = "font-bold text-emerald-400 font-mono text-sm";
+        alertBox.classList.add("hidden");
+      }
+    }
+
+    function autouzupelnij() {
+      document.getElementById("napiecie").value = toStr(229 + Math.random() * 4, 1);
+      document.getElementById("zs").value = toStr(0.75 + Math.random() * 0.4, 2);
+
+      const basePE = [0.17, 0.22, 0.14, 0.07, 0.08, 0.06, 0.09, 0.05];
+      for (let i = 0; i < 8; i++) {
+        const delta = Math.random() * 0.04 - 0.02;
+        document.getElementById(`pe_${i}`).value = toStr(Math.max(0.04, basePE[i] + delta), 2);
+      }
+
+      document.getElementById("rcd_m_i").value = toStr(16.8 + Math.random() * 2.5, 1);
+      document.getElementById("rcd_p_i").value = toStr(20.5 + Math.random() * 2.2, 1);
+
+      obliczUziemienie();
+      waliduj();
+    }
+
+    // Zapamiętywanie szablonu w pamięci podręcznej przeglądarki
+    let cachedPdfBytes = null;
+    document.getElementById("pdfFileInput").addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        cachedPdfBytes = await file.arrayBuffer();
+        document.getElementById("szablonStatus").innerText = "Załadowano z pliku ✅";
+        document.getElementById("szablonStatus").className = "text-emerald-400 font-bold";
+      }
+    });
+
+    async function generujPDF() {
+      const btn = document.getElementById("btnGen");
+      btn.innerText = "⏳ Czekaj...";
+      btn.disabled = true;
+
+      try {
+        let pdfBytes = cachedPdfBytes;
+
+        // Jeśli użytkownik nie wybrał pliku ręcznie, spróbuj pobrać go z serwera
+        if (!pdfBytes) {
+          try {
+            const resp = await fetch("szablon.pdf");
+            if (resp.ok) pdfBytes = await resp.arrayBuffer();
+          } catch (_) {}
+        }
+
+        if (!pdfBytes) {
+          alert("Wskaż plik szablon.pdf za pomocą przycisku 'Wybierz szablon'!");
+          btn.innerText = "📄 Pobierz PDF";
+          btn.disabled = false;
+          return;
+        }
+
+        const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
+        pdfDoc.registerFontkit(fontkit);
+
+        // Bezpieczne pobranie czcionki TrueType (TTF) z fallbackiem
+        let customFont;
+        try {
+          const fontRes = await fetch("https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/caveat/Caveat%5Bwght%5D.ttf");
+          if (fontRes.ok) {
+            const fontBytes = await fontRes.arrayBuffer();
+            customFont = await pdfDoc.embedFont(fontBytes);
+          }
+        } catch (e) {
+          console.warn("Brak sieci, używam czcionki systemowej Helvetica.");
+        }
+        if (!customFont) {
+          customFont = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+        }
+
+        const pages = pdfDoc.getPages();
+        const ink = PDFLib.rgb(0.08, 0.18, 0.45);
+
+        const drawText = (page, text, x, y, size = 11) => {
+          const h = page.getSize().height;
+          page.drawText(String(text), { x: x, y: h - y, size: size, font: customFont, color: ink });
+        };
+
+        const strike = (page, x1, y1, x2, y2) => {
+          const h = page.getSize().height;
+          page.drawLine({
+            start: { x: x1, y: h - y1 },
+            end: { x: x2, y: h - y2 },
+            thickness: 1.1,
+            color: ink
+          });
+        };
+
+        // STRONA 1
+        const p1 = pages[0];
+        drawText(p1, document.getElementById("nr_protokolu").value, 205, 80, 13);
+        drawText(p1, "/ HOVERBUD", 330, 80, 11);
+        drawText(p1, "2026 r.", 475, 80, 11);
+        drawText(p1, document.getElementById("nr_seryjny").value, 90, 130, 13);
+        strike(p1, 340, 292, 485, 292);
+        drawText(p1, document.getElementById("typ_maszyny").value, 245, 325, 11.5);
+        drawText(p1, document.getElementById("adres").value, 245, 350, 10.5);
+        drawText(p1, document.getElementById("data_pomiaru").value, 265, 375, 11.5);
+        drawText(p1, "Sonel", 100, 455);
+        drawText(p1, "MPI-540", 200, 455);
+        drawText(p1, "EK 1709", 290, 455);
+        drawText(p1, "Pomiar", 400, 455);
+        drawText(p1, "289834/25 do dnia 29.09.2026", 120, 505, 10.5);
+        drawText(p1, "10", 350, 620); drawText(p1, "B", 440, 620);
+        drawText(p1, "0,03", 350, 645); drawText(p1, "AC", 440, 645);
+        drawText(p1, "16", 350, 695); drawText(p1, "B", 440, 695);
+        drawText(p1, "0,03", 350, 720); drawText(p1, "AC", 440, 720);
+        strike(p1, 260, 747, 285, 747);
+
+        // STRONA 2
+        const p2 = pages[1];
+        drawText(p2, document.getElementById("napiecie").value, 130, 100);
+        drawText(p2, "50,0", 130, 125);
+        strike(p2, 315, 147, 345, 147);
+        [275, 295, 315].forEach(y => {
+          drawText(p2, "> 2000", 205, y);
+          drawText(p2, "1", 315, y);
+          strike(p2, 450, y - 3, 520, y - 3);
+        });
+        drawText(p2, document.getElementById("temp").value, 160, 345);
+        drawText(p2, document.getElementById("wilg").value, 150, 370);
+        drawText(p2, "500", 150, 395);
+
+        const yBazy5 = [515, 535, 555, 575, 595, 615, 635, 655];
+        for (let i = 0; i < 8; i++) {
+          drawText(p2, document.getElementById(`pe_${i}`).value, 395, yBazy5[i]);
+          strike(p2, 495, yBazy5[i] - 3, 525, yBazy5[i] - 3);
+        }
+        strike(p2, 340, 682, 420, 682);
+        strike(p2, 275, 707, 365, 707);
+
+        // STRONA 3
+        const p3 = pages[2];
+        drawText(p3, document.getElementById("u1").value, 75, 195);
+        drawText(p3, document.getElementById("u2").value, 75, 215);
+        drawText(p3, document.getElementById("u3").value, 75, 235);
+        drawText(p3, document.getElementById("rx_val").innerText.replace(' Ω', ''), 145, 215);
+        drawText(p3, "1,2", 220, 215);
+        drawText(p3, document.getElementById("r_val").innerText.replace(' Ω', ''), 295, 215);
+        drawText(p3, "10", 395, 215);
+        strike(p3, 495, 212, 525, 212);
+        strike(p3, 285, 542, 310, 542);
+        strike(p3, 315, 617, 400, 617);
+        strike(p3, 425, 642, 495, 642);
+        strike(p3, 485, 667, 510, 667);
+        drawText(p3, document.getElementById("rcd_m_tx5").value, 440, 715);
+        drawText(p3, document.getElementById("rcd_m_tx1").value, 440, 735);
+        drawText(p3, document.getElementById("rcd_m_i").value, 310, 755);
+        drawText(p3, "0,3", 310, 775);
+        strike(p3, 125, 812, 150, 812);
+        strike(p3, 160, 832, 215, 832);
+        strike(p3, 310, 832, 375, 832);
+
+        // STRONA 4
+        const p4 = pages[3];
+        strike(p4, 315, 112, 400, 112);
+        strike(p4, 425, 137, 495, 137);
+        strike(p4, 485, 162, 510, 162);
+        drawText(p4, document.getElementById("rcd_p_tx5").value, 440, 205);
+        drawText(p4, document.getElementById("rcd_p_tx1").value, 440, 225);
+        drawText(p4, document.getElementById("rcd_p_i").value, 310, 245);
+        drawText(p4, "0,3", 310, 265);
+        strike(p4, 125, 292, 150, 292);
+        strike(p4, 160, 312, 215, 312);
+        strike(p4, 310, 312, 375, 312);
+
+        const zsVal = document.getElementById("zs").value;
+        drawText(p4, "10", 145, 475); drawText(p4, "5", 195, 475); drawText(p4, "50", 255, 475);
+        drawText(p4, zsVal, 330, 475); drawText(p4, "4,72", 410, 475);
+        strike(p4, 500, 472, 525, 472);
+        drawText(p4, "16", 145, 515); drawText(p4, "5", 195, 515); drawText(p4, "80", 255, 515);
+        drawText(p4, zsVal, 330, 515); drawText(p4, "2,95", 410, 515);
+        strike(p4, 500, 512, 525, 512);
+
+        // STRONA 5
+        const p5 = pages[4];
+        drawText(p5, "N/D", 320, 330, 26);
+        drawText(p5, "N/D", 320, 700, 26);
+
+        // STRONA 6
+        const p6 = pages[5];
+        strike(p6, 265, 388, 425, 388);
+        drawText(p6, "Szymon Kacprzak", 380, 450, 13);
+        drawText(p6, "Szymon KACPRZAK D1 do dnia 27.04.2031; G1 do dnia 14.09.2030", 220, 485, 8.2);
+        drawText(p6, "G1/D/334/748/26; G1/E/5634/720/25", 220, 502, 9);
+
+        // Zapis pliku
+        const pdfResult = await pdfDoc.save();
+        const blob = new Blob([pdfResult], { type: "application/pdf" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        const nrMaszyny = document.getElementById("nr_protokolu").value.replace(/\s+/g, '_');
+        link.download = `Protokol_${nrMaszyny}.pdf`;
+        link.click();
+      } catch (err) {
+        alert("Błąd: " + err.message);
+      } finally {
+        btn.innerText = "📄 Pobierz PDF";
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
