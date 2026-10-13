@@ -1,492 +1,272 @@
 <!DOCTYPE html>
 <html lang="pl" class="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Protokolant Paczkomatów A2 • HOVERBUD</title>
-  
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-  <script src="https://unpkg.com/@pdf-lib/fontkit@0.0.4/dist/fontkit.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#070b14">
+<title>Protokolant Paczkomatów A2</title>
 
-  <!-- Ładowanie stabilnej czcionki odręcznej z wyraźnym daszkiem przy cyfrze 1 -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://unpkg.com/@pdf-lib/fontkit@0.0.4/dist/fontkit.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-            hand: ['"Patrick Hand"', 'cursive']
-          }
-        }
-      }
-    }
-  </script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <style>
-    .glass-panel {
-      background: rgba(15, 23, 42, 0.85);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    .glass-input {
-      background: rgba(2, 6, 23, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      transition: all 0.2s ease;
-    }
-    .glass-input:focus {
-      border-color: #6366f1;
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-    }
-    .drag-box {
-      position: absolute;
-      cursor: grab;
-      user-select: none;
-      touch-action: none;
-      border: 1.5px dashed rgba(99, 102, 241, 0.75);
-      background: rgba(238, 242, 255, 0.96);
-      border-radius: 4px;
-      padding: 1px 6px;
-      white-space: nowrap;
-      line-height: 1.1;
-      transform: translate(0, -50%);
-      font-family: 'Patrick Hand', cursive !important;
-      color: #0f2b6b;
-      font-weight: 700;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
-    }
-    .drag-box.strike-box {
-      border: 1.5px dashed rgba(239, 68, 68, 0.8) !important;
-      background: rgba(254, 226, 226, 0.85) !important;
-      color: #991b1b !important;
-      text-decoration: line-through;
-      font-weight: 800;
-    }
-    .drag-box:active { cursor: grabbing; }
-    .drag-box.selected {
-      border: 2px solid #ef4444 !important;
-      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.35) !important;
-      z-index: 50;
-    }
-  </style>
+<script>
+tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], hand: ['"Patrick Hand"', 'cursive'] } } } }
+</script>
+
+<style>
+.glass-panel{background:rgba(15,23,42,.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.08)}
+.glass-input{background:rgba(2,6,23,.7);border:1px solid rgba(255,255,255,.1);transition:all .2s}
+.glass-input:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.2)}
+.drag-box{position:absolute;cursor:grab;user-select:none;touch-action:none;border:1.5px dashed rgba(99,102,241,.75);background:rgba(238,242,255,.96);border-radius:4px;padding:1px 6px;white-space:nowrap;line-height:1.1;transform:translate(0,-50%);font-family:'Patrick Hand',cursive!important;color:#0f2b6b;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,.18)}
+.drag-box:active{cursor:grabbing}
+.drag-box.selected{border:2px solid #ef4444!important;box-shadow:0 0 0 4px rgba(239,68,68,.35)!important;z-index:50}
+
+/* zwarte klasy formularza */
+.card{border-radius:16px;padding:1rem}
+.hd{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:800;text-transform:uppercase;color:#818cf8;margin-bottom:.9rem}
+.g{display:grid;gap:.6rem;font-size:12px}
+.c2{grid-template-columns:repeat(2,1fr)}.c3{grid-template-columns:repeat(3,1fr)}.c4{grid-template-columns:repeat(4,1fr)}.c5{grid-template-columns:repeat(2,1fr)}
+@media(min-width:640px){.c5{grid-template-columns:repeat(5,1fr)}.s2{grid-column:span 2}.m2{grid-template-columns:repeat(2,1fr)}}
+.lbl{display:block;color:#94a3b8;font-size:10px;margin-bottom:4px}
+.ctr{text-align:center}
+.inp{width:100%;border-radius:12px;padding:.5rem .6rem;color:#fff;font-family:ui-monospace,SFMono-Regular,monospace}
+.inp.t{text-align:center}.inp.b{font-weight:700}.inp.am{color:#fcd34d}
+.sub{background:rgba(2,6,23,.55);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:.7rem}
+.badge{font-size:10px;font-weight:800;padding:4px 10px;border-radius:99px;background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.3)}
+.seg{padding:.35rem .75rem;border-radius:10px;font-weight:700}
+.chip{display:flex;align-items:center;gap:4px;padding:.25rem .6rem;border-radius:8px;font-weight:700;cursor:pointer}
+</style>
+<link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col antialiased pb-24 sm:pb-8">
 
-  <header class="sticky top-0 z-40 glass-panel border-b border-slate-800/80 px-3 sm:px-6 py-2.5 flex items-center justify-between">
-    <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/25">
-        <span class="text-white font-extrabold text-xl">⚡</span>
-      </div>
-      <div>
-        <div class="flex items-center gap-2">
-          <span class="font-extrabold text-sm sm:text-base tracking-tight text-white">Protokolant A2</span>
-          <span class="text-[10px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 px-2 py-0.5 rounded-full">InPost</span>
-        </div>
-        <p class="text-[11px] text-slate-400 font-mono">HOVERBUD • System Terenowy</p>
-      </div>
-    </div>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col antialiased">
 
-    <div class="hidden sm:flex bg-slate-900/90 p-1 rounded-2xl border border-slate-800 text-xs">
-      <button onclick="switchTab('form')" id="tabBtnForm" class="px-3.5 py-1.5 rounded-xl font-bold bg-indigo-600 text-white shadow">
-        📋 Dane & AI
-      </button>
-      <button onclick="switchTab('editor')" id="tabBtnEditor" class="px-3.5 py-1.5 rounded-xl font-bold text-slate-400 hover:text-white">
-        🎯 Ruchomy PDF & Skreślenia
-      </button>
-      <button onclick="otworzHistorie()" class="px-3.5 py-1.5 rounded-xl font-bold text-slate-400 hover:text-amber-400 flex items-center gap-1">
-        📚 Historia (<span id="historiaCount">0</span>)
-      </button>
-    </div>
-
-    <div class="flex items-center gap-2">
-      <button onclick="aiUzupelnijWszystko()" class="hidden md:flex items-center gap-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:scale-95 text-xs font-bold px-3 py-2 rounded-xl shadow-lg transition">
-        <span>✨</span> AI Dopełnij
-      </button>
-      <button onclick="generujWydrukPDF()" id="btnPobierz" class="flex items-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 active:scale-95 text-xs font-bold px-4 py-2 rounded-xl shadow-lg transition text-white">
-        <span>📄</span> Pobierz PDF
-      </button>
-    </div>
-  </header>
-
-  <div class="bg-gradient-to-r from-indigo-500/10 via-purple-500/5 to-transparent border-b border-indigo-500/20 px-3 sm:px-6 py-2 text-xs flex flex-wrap justify-between items-center gap-2">
-    <div class="flex items-center gap-2">
-      <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-      <span id="szablonStatusText" class="text-slate-300">Szablon gotowy ✅</span>
-    </div>
-    
-    <div class="flex items-center gap-2">
-      <button onclick="toggleGlos()" id="btnGlos" class="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 active:scale-95 text-indigo-300 border border-indigo-500/30 px-2.5 py-1 rounded-lg font-bold transition">
-        <span id="micIcon">🎙️</span> <span id="micText">Dyktuj</span>
-      </button>
-      <label class="cursor-pointer flex items-center gap-1 bg-purple-600/30 hover:bg-purple-600/40 text-purple-200 border border-purple-500/40 px-2.5 py-1 rounded-lg font-bold transition">
-        <span>📷</span> Foto tabliczki (OCR)
-        <input type="file" id="ocrInput" accept="image/*" class="hidden">
-      </label>
-      <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-2.5 py-1 rounded-lg font-medium transition text-[11px]">
-        Szablon PDF
-        <input type="file" id="fileUpload" accept="application/pdf" class="hidden">
-      </label>
-    </div>
-  </div>
-
-  <div id="aiLiveToast" class="hidden fixed top-16 right-4 z-50 glass-panel border border-indigo-500/50 p-3 rounded-2xl shadow-2xl text-xs max-w-xs transition-all">
-    <div class="flex items-center gap-2 text-indigo-400 font-bold mb-1">
-      <span id="toastIcon">✨</span> <span id="toastTitle">Asystent</span>
-    </div>
-    <div id="toastMessage" class="text-slate-200 font-mono text-[11px]">...</div>
-  </div>
-
-  <main class="flex-1 max-w-4xl w-full mx-auto p-3 sm:p-5 space-y-4">
-    <!-- WIDOK 1: FORMULARZ -->
-    <div id="viewForm" class="space-y-4">
-      <div class="sm:hidden flex gap-2">
-        <button onclick="aiUzupelnijWszystko()" class="w-1/2 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-xs font-extrabold flex items-center justify-center gap-1.5 shadow">
-          <span>✨</span> AI Dopełnij
-        </button>
-        <button onclick="otworzHistorie()" class="w-1/2 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs font-extrabold flex items-center justify-center gap-1.5 text-amber-300">
-          <span>📚</span> Historia
-        </button>
-      </div>
-
-      <!-- 1. Identyfikacja -->
-      <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
-            <span>📍</span> 1. Identyfikacja Paczkomatu
-          </h2>
-          <span class="text-[10px] text-slate-400 font-mono">Wklej foto tabliczki (Ctrl+V)</span>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
-          <div>
-            <label class="block text-slate-400 mb-1 text-[11px] font-medium">Numer protokołu</label>
-            <input type="text" id="nr_protokolu" value="WAW 852 M" class="w-full glass-input rounded-xl px-3 py-2 text-white font-mono font-bold">
-          </div>
-          <div>
-            <label class="block text-slate-400 mb-1 text-[11px] font-medium">Data pomiaru (DD / MM / RRRR)</label>
-            <div class="grid grid-cols-3 gap-1.5">
-              <input type="text" id="data_dd" value="10" placeholder="DD" class="glass-input rounded-xl px-2 py-2 text-white text-center font-mono font-bold">
-              <input type="text" id="data_mm" value="09" placeholder="MM" class="glass-input rounded-xl px-2 py-2 text-white text-center font-mono font-bold">
-              <input type="text" id="data_rr" value="2026" placeholder="RRRR" class="glass-input rounded-xl px-2 py-2 text-white text-center font-mono font-bold">
-            </div>
-          </div>
-          <div class="sm:col-span-2">
-            <label class="block text-slate-400 mb-1 text-[11px] font-medium">Numer seryjny maszyny</label>
-            <input type="text" id="nr_seryjny" value="25/CQU121000159" class="w-full glass-input rounded-xl px-3 py-2 text-amber-300 font-mono font-extrabold tracking-wider">
-          </div>
-          <div>
-            <label class="block text-slate-400 mb-1 text-[11px] font-medium">Typ maszyny</label>
-            <input type="text" id="typ_maszyny" value="QR NFM 8.4 A0000 W5VYY" class="w-full glass-input rounded-xl px-3 py-2 text-white font-mono">
-          </div>
-          <div>
-            <label class="block text-slate-400 mb-1 text-[11px] font-medium">Dokładny adres instalacji</label>
-            <input type="text" id="adres" value="02-495 WARSZAWA Michałowicza 19" class="w-full glass-input rounded-xl px-3 py-2 text-white">
-          </div>
-        </div>
-      </div>
-
-      <!-- 1e. Profile mierników -->
-      <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
-            <span>🛠️</span> 1e. Przyrządy Pomiarowe
-          </h2>
-          <div class="flex items-center gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800 text-[11px]">
-            <button onclick="ustawProfilMiernika(1)" id="pMiernik1Btn" class="px-2.5 py-1 rounded-lg font-bold bg-indigo-600 text-white">
-              Miernik 1 (MPI-540)
-            </button>
-            <button onclick="ustawProfilMiernika(2)" id="pMiernik2Btn" class="px-2.5 py-1 rounded-lg font-bold text-slate-400 hover:text-white">
-              Miernik 2 (Zapasowy)
-            </button>
-          </div>
-        </div>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs mb-3">
-          <div>
-            <label class="block text-slate-400 mb-1 text-[10px]">Nazwa</label>
-            <input type="text" id="m_nazwa" value="Sonel" onchange="zapiszProfilMiernika()" class="w-full glass-input rounded-xl p-2 text-white">
-          </div>
-          <div>
-            <label class="block text-slate-400 mb-1 text-[10px]">Typ</label>
-            <input type="text" id="m_typ" value="MPI-540" onchange="zapiszProfilMiernika()" class="w-full glass-input rounded-xl p-2 text-white font-mono">
-          </div>
-          <div>
-            <label class="block text-slate-400 mb-1 text-[10px]">Nr fabryczny</label>
-            <input type="text" id="m_nr" value="EK 1709" onchange="zapiszProfilMiernika()" class="w-full glass-input rounded-xl p-2 text-amber-300 font-mono font-bold">
-          </div>
-          <div>
-            <label class="block text-slate-400 mb-1 text-[10px]">Zastosowanie</label>
-            <input type="text" id="m_zast" value="Pomiar" onchange="zapiszProfilMiernika()" class="w-full glass-input rounded-xl p-2 text-white">
-          </div>
-        </div>
-        <div>
-          <label class="block text-slate-400 mb-1 text-[10px]">Świadectwo wzorcowania</label>
-          <input type="text" id="swiadectwo" value="289834/25 do dnia 29.09.2026" onchange="zapiszProfilMiernika()" class="w-full glass-input rounded-xl p-2 text-white font-mono">
-        </div>
-      </div>
-
-      <!-- 2. Zasilanie -->
-      <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
-            <span>🔌</span> 2. Sieć Zasilająca & Środowisko
-          </h2>
-          <span id="vBadge" class="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Norma OK</span>
-        </div>
-        <div class="grid grid-cols-3 gap-3 text-xs">
-          <div>
-            <label class="block text-slate-400 mb-1 text-[11px] text-center">Napięcie Uo [V]</label>
-            <input type="text" inputmode="decimal" id="napiecie" value="221,7" class="w-full glass-input rounded-xl p-2 text-white font-mono font-bold text-center">
-          </div>
-          <div>
-            <label class="block text-slate-400 mb-1 text-[11px] text-center">Temperatura [°C]</label>
-            <input type="text" inputmode="decimal" id="temp" value="27,9" class="w-full glass-input rounded-xl p-2 text-white text-center">
-          </div>
-          <div>
-            <label class="block text-slate-400 mb-1 text-[11px] text-center">Wilgotność [%]</label>
-            <input type="text" inputmode="decimal" id="wilg" value="51,5" class="w-full glass-input rounded-xl p-2 text-white text-center">
-          </div>
-        </div>
-      </div>
-
-      <!-- 4. Izolacja -->
-      <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
-        <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-          <span>🛡️</span> 4. Pomiar Rezystancji Izolacji (Wymóg ≥ 1 MΩ)
-        </h2>
-        <div class="space-y-2 text-xs">
-          <div class="grid grid-cols-2 gap-3 font-bold text-slate-400 text-[10px] text-center px-1">
-            <span>Wynik pomiaru [MΩ]</span>
-            <span>Wymagana wartość M[Ω]</span>
-          </div>
-          <div class="grid grid-cols-2 gap-3 items-center bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
-            <input type="text" id="iz1" value="> 2000" class="glass-input rounded-lg p-1.5 text-center font-mono">
-            <input type="text" id="iz_req1" value="1" class="glass-input rounded-lg p-1.5 text-center font-mono font-bold text-amber-300">
-          </div>
-          <div class="grid grid-cols-2 gap-3 items-center bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
-            <input type="text" id="iz2" value="> 2000" class="glass-input rounded-lg p-1.5 text-center font-mono">
-            <input type="text" id="iz_req2" value="1" class="glass-input rounded-lg p-1.5 text-center font-mono font-bold text-amber-300">
-          </div>
-          <div class="grid grid-cols-2 gap-3 items-center bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
-            <input type="text" id="iz3" value="> 2000" class="glass-input rounded-lg p-1.5 text-center font-mono">
-            <input type="text" id="iz_req3" value="1" class="glass-input rounded-lg p-1.5 text-center font-mono font-bold text-amber-300">
-          </div>
-        </div>
-      </div>
-
-      <!-- 5. Ciągłość PE -->
-      <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
-            <span>🔗</span> 5. Ciągłość PE (Norma ≤ 0,20 Ω)
-          </h2>
-          <button onclick="aiGenerujPE()" class="text-xs font-bold text-indigo-400 hover:text-indigo-300">✨ Wstaw normowe</button>
-        </div>
-        <div class="grid grid-cols-4 sm:grid-cols-8 gap-2 text-xs" id="peContainer"></div>
-      </div>
-
-      <!-- 6. Uziemienie -->
-      <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
-            <span>⏚</span> 6. Rezystancja Uziemienia (Pkt 6.1)
-          </h2>
-          <span id="uBadge" class="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Norma OK</span>
-        </div>
-        <div class="grid grid-cols-3 gap-2 text-xs mb-3">
-          <div>
-            <label class="block text-slate-400 mb-1 text-[10px] text-center">Pomiar 1 [Ω]</label>
-            <input type="text" inputmode="decimal" id="u1" value="6,78" oninput="obliczUziemienie()" class="w-full glass-input rounded-xl p-2 text-white font-mono text-center">
-          </div>
-          <div>
-            <label class="block text-slate-400 mb-1 text-[10px] text-center">Pomiar 2 [Ω]</label>
-            <input type="text" inputmode="decimal" id="u2" value="6,80" oninput="obliczUziemienie()" class="w-full glass-input rounded-xl p-2 text-white font-mono text-center">
-          </div>
-          <div>
-            <label class="block text-slate-400 mb-1 text-[10px] text-center">Pomiar 3 [Ω]</label>
-            <input type="text" inputmode="decimal" id="u3" value="6,80" oninput="obliczUziemienie()" class="w-full glass-input rounded-xl p-2 text-white font-mono text-center">
-          </div>
-        </div>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs bg-slate-950/70 p-3 rounded-2xl border border-slate-800">
-          <div>
-            <label class="block text-slate-400 mb-1 text-[10px] text-center">Średnia Rx [Ω]</label>
-            <input type="text" id="u_rx" value="6,79" class="w-full glass-input rounded-xl p-1.5 text-center font-mono font-bold text-amber-300">
-          </div>
-          <div>
-            <label class="block text-slate-400 mb-1 text-[10px] text-center">Współczynnik kp</label>
-            <input type="text" id="u_kp" value="1,2" oninput="obliczUziemienie()" class="w-full glass-input rounded-xl p-1.5 text-center font-mono font-bold text-white">
-          </div>
-          <div>
-            <label class="block text-slate-400 mb-1 text-[10px] text-center">Wynik R [Ω]</label>
-            <input type="text" id="u_r" value="8,15" class="w-full glass-input rounded-xl p-1.5 text-center font-mono font-bold text-emerald-400">
-          </div>
-          <div>
-            <label class="block text-slate-400 mb-1 text-[10px] text-center">Dopuszczalna [Ω]</label>
-            <input type="text" id="u_dop" value="10" class="w-full glass-input rounded-xl p-1.5 text-center font-mono font-bold text-white">
-          </div>
-        </div>
-      </div>
-
-      <!-- 7 & 8. RCD -->
-      <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
-        <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-          <span>⚡</span> 7 i 8. Parametry Wyłączników RCD (30 mA AC)
-        </h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
-          <div class="bg-slate-950/70 p-3.5 rounded-2xl border border-slate-800 space-y-2">
-            <span class="font-bold text-slate-300 block text-[11px]">RCD w Maszynie</span>
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <span class="text-[10px] text-slate-400 block mb-1">Czas tΔ (x5 / x1) [ms]</span>
-                <div class="flex gap-1.5">
-                  <input type="text" id="rcd_m_tx5" value="6" class="w-1/2 glass-input rounded-xl p-1.5 text-center font-mono">
-                  <input type="text" id="rcd_m_tx1" value="18" class="w-1/2 glass-input rounded-xl p-1.5 text-center font-mono">
-                </div>
-              </div>
-              <div>
-                <span class="text-[10px] text-slate-400 block mb-1">Prąd IΔn [mA]</span>
-                <input type="text" inputmode="decimal" id="rcd_m_i" value="17,1" class="w-full glass-input rounded-xl p-1.5 font-mono text-center">
-              </div>
-            </div>
-          </div>
-          <div class="bg-slate-950/70 p-3.5 rounded-2xl border border-slate-800 space-y-2">
-            <span class="font-bold text-slate-300 block text-[11px]">RCD w Przyłączu</span>
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <span class="text-[10px] text-slate-400 block mb-1">Czas tΔ (x5 / x1) [ms]</span>
-                <div class="flex gap-1.5">
-                  <input type="text" id="rcd_p_tx5" value="16" class="w-1/2 glass-input rounded-xl p-1.5 text-center font-mono">
-                  <input type="text" id="rcd_p_tx1" value="22" class="w-1/2 glass-input rounded-xl p-1.5 text-center font-mono">
-                </div>
-              </div>
-              <div>
-                <span class="text-[10px] text-slate-400 block mb-1">Prąd IΔn [mA]</span>
-                <input type="text" inputmode="decimal" id="rcd_p_i" value="21,0" class="w-full glass-input rounded-xl p-1.5 font-mono text-center">
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 9. Zs -->
-      <div class="glass-panel rounded-2xl p-4 sm:p-5 shadow-xl">
-        <h2 class="text-xs font-extrabold text-indigo-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-          <span>🎯</span> 9. Badanie Ochrony Przeciwporażeniowej
-        </h2>
-        <div class="space-y-3 text-xs">
-          <div class="hidden sm:grid grid-cols-5 gap-2 text-center text-[10px] font-bold text-slate-400 px-1">
-            <span>Prąd In [A]</span>
-            <span>Współcz. k</span>
-            <span>Prąd Ia [A]</span>
-            <span>Zs zmierzona [Ω]</span>
-            <span>Zs dopuszczalna [Ω]</span>
-          </div>
-          <div class="bg-slate-950/70 p-3 rounded-2xl border border-slate-800 space-y-1.5">
-            <span class="text-[11px] font-bold text-indigo-300 block">Główne zabezpieczenie paczkomatu</span>
-            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
-              <input type="text" id="p9_in_1" value="10" placeholder="In [A]" class="glass-input rounded-xl p-2 text-center font-mono">
-              <input type="text" id="p9_k_1" value="5" placeholder="k" class="glass-input rounded-xl p-2 text-center font-mono">
-              <input type="text" id="p9_ia_1" value="50" placeholder="Ia [A]" class="glass-input rounded-xl p-2 text-center font-mono">
-              <input type="text" id="p9_zsm_1" value="1,18" placeholder="Zs [Ω]" class="glass-input rounded-xl p-2 text-center font-mono font-bold text-white">
-              <input type="text" id="p9_zsd_1" value="4,72" placeholder="Zs dop [Ω]" class="glass-input rounded-xl p-2 text-center font-mono font-bold text-amber-300">
-            </div>
-          </div>
-          <div class="bg-slate-950/70 p-3 rounded-2xl border border-slate-800 space-y-1.5">
-            <span class="text-[11px] font-bold text-indigo-300 block">Zabezpieczenie w przyłączu</span>
-            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
-              <input type="text" id="p9_in_2" value="16" placeholder="In [A]" class="glass-input rounded-xl p-2 text-center font-mono">
-              <input type="text" id="p9_k_2" value="5" placeholder="k" class="glass-input rounded-xl p-2 text-center font-mono">
-              <input type="text" id="p9_ia_2" value="80" placeholder="Ia [A]" class="glass-input rounded-xl p-2 text-center font-mono">
-              <input type="text" id="p9_zsm_2" value="1,18" placeholder="Zs [Ω]" class="glass-input rounded-xl p-2 text-center font-mono font-bold text-white">
-              <input type="text" id="p9_zsd_2" value="2,95" placeholder="Zs dop [Ω]" class="glass-input rounded-xl p-2 text-center font-mono font-bold text-amber-300">
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- WIDOK 2: RUCHOMY PDF & SKREŚLENIA -->
-    <div id="viewEditor" class="hidden space-y-3">
-      <div class="glass-panel rounded-2xl p-3 flex flex-wrap justify-between items-center gap-2.5">
-        <div class="flex items-center gap-2">
-          <button onclick="changePage(-1)" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-white flex items-center justify-center font-extrabold shadow">◀</button>
-          <span id="pageNumberDisplay" class="text-xs font-mono font-extrabold text-amber-400 px-2">Strona 1 / 6</span>
-          <button onclick="changePage(1)" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-white flex items-center justify-center font-extrabold shadow">▶</button>
-        </div>
-        <div class="flex items-center gap-2">
-          <span id="desktopActiveField" class="hidden md:inline text-slate-400 font-mono text-xs">Chwyć kafelek lub skreślenie myszką</span>
-          <button onclick="przywrocWspolrzedne()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-3 py-2 rounded-xl text-xs transition">
-            🔄 Resetuj
-          </button>
-          <button onclick="zapiszMatryce()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold px-3.5 py-2 rounded-xl text-xs shadow-lg transition">
-            💾 Zapisz matrycę
-          </button>
-        </div>
-      </div>
-
-      <div class="flex justify-center overflow-auto p-2 sm:p-4 bg-slate-950 rounded-2xl border border-slate-800/80 min-h-[500px]">
-        <div id="canvasWrapper" class="relative shadow-2xl bg-white rounded-lg overflow-hidden">
-          <canvas id="pdfCanvas" class="block"></canvas>
-          <div id="dragLayer" class="absolute inset-0 overflow-hidden pointer-events-auto"></div>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <!-- Modal historii -->
-  <div id="modalHistoria" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6">
-    <div class="glass-panel w-full max-w-2xl rounded-3xl p-5 border border-slate-700 shadow-2xl flex flex-col max-h-[85vh]">
-      <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
-        <h3 class="text-sm font-extrabold text-amber-400 uppercase tracking-wider flex items-center gap-2">
-          <span>📚</span> Archiwum Protokołów
-        </h3>
-        <button onclick="zamknijHistorie()" class="text-slate-400 hover:text-white font-bold text-lg px-2">✕</button>
-      </div>
-      <div id="historiaLista" class="flex-1 overflow-auto space-y-2 pr-1"></div>
-      <div class="pt-4 border-t border-slate-800 flex justify-between items-center text-xs">
-        <button onclick="wyczyscCalaHistorie()" class="text-rose-400 hover:text-rose-300">Wyczyść archiwum</button>
-        <button onclick="zamknijHistorie()" class="bg-slate-800 text-white font-bold px-4 py-2 rounded-xl">Zamknij</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="sm:hidden fixed bottom-0 left-0 right-0 z-40 glass-panel border-t border-slate-800/80 px-6 py-2.5 flex justify-around">
-    <button onclick="switchTab('form')" id="mTabForm" class="flex flex-col items-center gap-1 text-indigo-400 font-bold text-[11px]">
-      <span class="text-base">📋</span> Dane & AI
-    </button>
-    <button onclick="switchTab('editor')" id="mTabEditor" class="flex flex-col items-center gap-1 text-slate-400 font-bold text-[11px]">
-      <span class="text-base">🎯</span> Ruchomy PDF
-    </button>
-  </div>
-
-  <div id="mobileDpad" class="hidden fixed bottom-14 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 glass-panel p-2.5 sm:p-3 rounded-2xl shadow-2xl border border-indigo-500/30 flex items-center gap-3">
+<header class="sticky top-0 z-40 glass-panel px-3 sm:px-6 py-2.5 flex items-center justify-between">
+  <div class="flex items-center gap-3">
+    <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-cyan-400 flex items-center justify-center shadow-lg"><span class="text-xl">⚡</span></div>
     <div>
-      <div class="text-[10px] text-slate-400 font-mono" id="dpadLabel">Wybrane: brak</div>
-      <div class="flex items-center gap-1 mt-1">
-        <button onclick="setNudgeStep(1)" id="step1Btn" class="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-600 text-white">1px</button>
-        <button onclick="setNudgeStep(5)" id="step5Btn" class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400">5px</button>
-        <button onclick="setNudgeStep(10)" id="step10Btn" class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400">10px</button>
-      </div>
-    </div>
-    <div class="grid grid-cols-3 gap-1">
-      <div></div>
-      <button onclick="nudge(0, -currentNudgeStep)" class="w-8 h-8 rounded-lg bg-slate-800 text-white font-black flex items-center justify-center text-xs">▲</button>
-      <div></div>
-      <button onclick="nudge(-currentNudgeStep, 0)" class="w-8 h-8 rounded-lg bg-slate-800 text-white font-black flex items-center justify-center text-xs">◀</button>
-      <button onclick="deselectActiveBox()" class="w-8 h-8 rounded-lg bg-rose-500/20 text-rose-300 font-black flex items-center justify-center text-[10px]">✕</button>
-      <button onclick="nudge(currentNudgeStep, 0)" class="w-8 h-8 rounded-lg bg-slate-800 text-white font-black flex items-center justify-center text-xs">▶</button>
-      <div></div>
-      <button onclick="nudge(0, currentNudgeStep)" class="w-8 h-8 rounded-lg bg-slate-800 text-white font-black flex items-center justify-center text-xs">▼</button>
-      <div></div>
+      <div class="font-extrabold text-sm sm:text-base tracking-tight">Protokolant A2</div>
+      <p class="text-[11px] text-slate-400 font-mono">Protokół pomiarów elektrycznych</p>
     </div>
   </div>
+  <div class="hidden sm:flex bg-slate-900/90 p-1 rounded-2xl border border-slate-800 text-xs">
+    <button onclick="switchTab('form')" id="tabBtnForm" class="seg bg-indigo-600 text-white">📋 Dane</button>
+    <button onclick="switchTab('editor')" id="tabBtnEditor" class="seg text-slate-400">🎯 Podgląd PDF</button>
+    <button onclick="otworzHistorie()" class="seg text-slate-400">📚 Historia (<span id="historiaCount">0</span>)</button>
+  </div>
+  <button onclick="generujWydrukPDF()" id="btnPobierz" class="bg-gradient-to-r from-emerald-600 to-teal-500 active:scale-95 text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg text-white">📄 Pobierz PDF</button>
+</header>
 
-  <script src="app.js"></script>
+<div class="border-b border-indigo-500/20 px-3 sm:px-6 py-2 text-xs flex flex-wrap justify-between items-center gap-2">
+  <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span><span id="szablonStatusText" class="text-slate-300">Szablon gotowy ✅</span></div>
+  <div class="flex items-center gap-2">
+    <button onclick="toggleGlos()" id="btnGlos" class="chip bg-slate-800 text-indigo-300 border border-indigo-500/30"><span id="micIcon">🎙️</span><span id="micText">Dyktuj</span></button>
+    <label class="chip bg-purple-600/30 text-purple-200 border border-purple-500/40">📷 Foto tabliczki<input type="file" id="ocrInput" accept="image/*" class="hidden"></label>
+    <label class="chip bg-slate-800 text-slate-300 border border-slate-700 text-[11px]">Szablon PDF<input type="file" id="fileUpload" accept="application/pdf" class="hidden"></label>
+  </div>
+</div>
+
+<div id="aiLiveToast" class="hidden fixed top-16 right-4 z-50 glass-panel p-3 rounded-2xl shadow-2xl text-xs max-w-xs">
+  <div class="flex items-center gap-2 text-indigo-400 font-bold mb-1"><span id="toastIcon">✨</span><span id="toastTitle">Info</span></div>
+  <div id="toastMessage" class="text-slate-200 font-mono text-[11px]">...</div>
+</div>
+
+<main class="flex-1 max-w-4xl w-full mx-auto p-3 sm:p-5 space-y-4">
+
+<div id="viewForm" class="space-y-4">
+
+  <button onclick="otworzHistorie()" class="sm:hidden w-full py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs font-extrabold text-amber-300">📚 Historia protokołów</button>
+
+  <section class="glass-panel card shadow-xl">
+    <h2 class="hd"><span>📍 1. Identyfikacja paczkomatu</span><span class="text-[10px] text-slate-400 font-mono normal-case">Ctrl+V = wklej foto tabliczki</span></h2>
+    <div class="g m2">
+      <div><label class="lbl">Numer protokołu</label><input type="text" id="nr_protokolu" placeholder="np. WAW 123 M" class="glass-input inp b"></div>
+      <div><label class="lbl">Data pomiaru (DD / MM / RRRR)</label>
+        <div class="g c3" style="gap:.4rem">
+          <input type="text" inputmode="numeric" id="data_dd" placeholder="DD" class="glass-input inp t b">
+          <input type="text" inputmode="numeric" id="data_mm" placeholder="MM" class="glass-input inp t b">
+          <input type="text" inputmode="numeric" id="data_rr" placeholder="RRRR" class="glass-input inp t b">
+        </div></div>
+      <div class="s2"><label class="lbl">Numer seryjny maszyny</label><input type="text" id="nr_seryjny" placeholder="np. 25/CQU121000159" class="glass-input inp b am" style="letter-spacing:.05em"></div>
+      <div><label class="lbl">Typ maszyny</label><input type="text" id="typ_maszyny" class="glass-input inp"></div>
+      <div><label class="lbl">Adres instalacji</label><input type="text" id="adres" class="glass-input inp" style="font-family:inherit"></div>
+    </div>
+  </section>
+
+  <section class="glass-panel card shadow-xl">
+    <h2 class="hd"><span>🛠️ 1e. Przyrządy pomiarowe</span>
+      <span class="flex gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800 text-[11px] normal-case">
+        <button onclick="ustawProfilMiernika(1)" id="pMiernik1Btn" class="px-2.5 py-1 rounded-lg font-bold bg-indigo-600 text-white">Miernik 1</button>
+        <button onclick="ustawProfilMiernika(2)" id="pMiernik2Btn" class="px-2.5 py-1 rounded-lg font-bold text-slate-400">Miernik 2</button>
+      </span></h2>
+    <div class="g c2 sm:grid-cols-4" style="margin-bottom:.6rem">
+      <div><label class="lbl">Nazwa</label><input type="text" id="m_nazwa" value="Sonel" onchange="zapiszProfilMiernika()" class="glass-input inp" style="font-family:inherit"></div>
+      <div><label class="lbl">Typ</label><input type="text" id="m_typ" value="MPI-540" onchange="zapiszProfilMiernika()" class="glass-input inp"></div>
+      <div><label class="lbl">Nr fabryczny</label><input type="text" id="m_nr" value="EK 1709" onchange="zapiszProfilMiernika()" class="glass-input inp am b"></div>
+      <div><label class="lbl">Zastosowanie</label><input type="text" id="m_zast" value="Pomiar" onchange="zapiszProfilMiernika()" class="glass-input inp" style="font-family:inherit"></div>
+    </div>
+    <label class="lbl">Świadectwo wzorcowania (nr i ważność)</label>
+    <input type="text" id="swiadectwo" value="289834/25 do dnia 29.09.2026" onchange="zapiszProfilMiernika()" class="glass-input inp">
+  </section>
+
+  <section class="glass-panel card shadow-xl">
+    <h2 class="hd"><span>🔌 2. Sieć zasilająca i środowisko</span><span id="vBadge" class="badge">—</span></h2>
+    <div class="g c3">
+      <div><label class="lbl ctr">Napięcie Uo [V]</label><input type="text" inputmode="decimal" id="napiecie" placeholder="230,0" class="glass-input inp t b"></div>
+      <div><label class="lbl ctr">Temperatura [°C]</label><input type="text" inputmode="decimal" id="temp" class="glass-input inp t"></div>
+      <div><label class="lbl ctr">Wilgotność [%]</label><input type="text" inputmode="decimal" id="wilg" class="glass-input inp t"></div>
+    </div>
+  </section>
+
+  <section class="glass-panel card shadow-xl">
+    <h2 class="hd">🛡️ 4. Rezystancja izolacji (wymóg ≥ 1 MΩ)</h2>
+    <div class="g" style="gap:.5rem">
+      <div class="g c3 text-[10px] font-bold text-slate-400 ctr"><span>Układ</span><span>Wynik [MΩ]</span><span>Wymagana [MΩ]</span></div>
+      <div class="sub g c3 items-center"><span class="ctr text-slate-300 font-bold">L-N</span><input type="text" id="iz1" placeholder="> 2000" class="glass-input inp t"><input type="text" id="iz_req1" value="1" class="glass-input inp t b am"></div>
+      <div class="sub g c3 items-center"><span class="ctr text-slate-300 font-bold">L-PE</span><input type="text" id="iz2" placeholder="> 2000" class="glass-input inp t"><input type="text" id="iz_req2" value="1" class="glass-input inp t b am"></div>
+      <div class="sub g c3 items-center"><span class="ctr text-slate-300 font-bold">N-PE</span><input type="text" id="iz3" placeholder="> 2000" class="glass-input inp t"><input type="text" id="iz_req3" value="1" class="glass-input inp t b am"></div>
+    </div>
+  </section>
+
+  <section class="glass-panel card shadow-xl">
+    <h2 class="hd">🔗 5. Ciągłość połączeń PE (norma ≤ 0,20 Ω)</h2>
+    <div class="grid grid-cols-4 sm:grid-cols-8 gap-2 text-xs" id="peContainer"></div>
+  </section>
+
+  <section class="glass-panel card shadow-xl">
+    <h2 class="hd"><span>⏚ 6. Rezystancja uziemienia (pkt 6.1)</span><span id="uBadge" class="badge">—</span></h2>
+    <div class="g c3" style="margin-bottom:.6rem">
+      <div><label class="lbl ctr">Pomiar 1 [Ω]</label><input type="text" inputmode="decimal" id="u1" oninput="obliczUziemienie()" class="glass-input inp t"></div>
+      <div><label class="lbl ctr">Pomiar 2 [Ω]</label><input type="text" inputmode="decimal" id="u2" oninput="obliczUziemienie()" class="glass-input inp t"></div>
+      <div><label class="lbl ctr">Pomiar 3 [Ω]</label><input type="text" inputmode="decimal" id="u3" oninput="obliczUziemienie()" class="glass-input inp t"></div>
+    </div>
+    <div class="sub g c2 sm:grid-cols-4">
+      <div><label class="lbl ctr">Średnia Rx [Ω]</label><input type="text" id="u_rx" class="glass-input inp t b am"></div>
+      <div><label class="lbl ctr">Współczynnik kp</label><input type="text" id="u_kp" value="1,2" oninput="obliczUziemienie()" class="glass-input inp t b"></div>
+      <div><label class="lbl ctr">Wynik R [Ω]</label><input type="text" id="u_r" class="glass-input inp t b" style="color:#34d399"></div>
+      <div><label class="lbl ctr">Dopuszczalna [Ω]</label><input type="text" id="u_dop" value="10" class="glass-input inp t b"></div>
+    </div>
+  </section>
+
+  <section class="glass-panel card shadow-xl">
+    <h2 class="hd">⚡ 7 i 8. Wyłączniki RCD (30 mA)</h2>
+    <div class="g m2">
+      <div class="sub">
+        <span class="font-bold text-slate-300 block text-[11px] mb-2">RCD w maszynie</span>
+        <div class="g c2">
+          <div><span class="lbl">tΔ x5 / x1 [ms]</span><div class="flex gap-1.5"><input type="text" inputmode="numeric" id="rcd_m_tx5" class="glass-input inp t" style="width:50%"><input type="text" inputmode="numeric" id="rcd_m_tx1" class="glass-input inp t" style="width:50%"></div></div>
+          <div><span class="lbl">IΔn [mA]</span><input type="text" inputmode="decimal" id="rcd_m_i" class="glass-input inp t"></div>
+        </div>
+      </div>
+      <div class="sub">
+        <span class="font-bold text-slate-300 block text-[11px] mb-2">RCD w przyłączu</span>
+        <div class="g c2">
+          <div><span class="lbl">tΔ x5 / x1 [ms]</span><div class="flex gap-1.5"><input type="text" inputmode="numeric" id="rcd_p_tx5" class="glass-input inp t" style="width:50%"><input type="text" inputmode="numeric" id="rcd_p_tx1" class="glass-input inp t" style="width:50%"></div></div>
+          <div><span class="lbl">IΔn [mA]</span><input type="text" inputmode="decimal" id="rcd_p_i" class="glass-input inp t"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="glass-panel card shadow-xl">
+    <h2 class="hd">🎯 9. Ochrona przeciwporażeniowa</h2>
+    <div class="g" style="gap:.6rem">
+      <div class="sub">
+        <span class="text-[11px] font-bold text-indigo-300 block mb-2">Główne zabezpieczenie paczkomatu</span>
+        <div class="g c5">
+          <div><label class="lbl ctr">In [A]</label><input type="text" id="p9_in_1" value="10" class="glass-input inp t"></div>
+          <div><label class="lbl ctr">k</label><input type="text" id="p9_k_1" value="5" class="glass-input inp t"></div>
+          <div><label class="lbl ctr">Ia [A]</label><input type="text" id="p9_ia_1" class="glass-input inp t"></div>
+          <div><label class="lbl ctr">Zs zmierzona [Ω]</label><input type="text" inputmode="decimal" id="p9_zsm_1" class="glass-input inp t b"></div>
+          <div><label class="lbl ctr">Zs dop. [Ω]</label><input type="text" id="p9_zsd_1" class="glass-input inp t b am"></div>
+        </div>
+      </div>
+      <div class="sub">
+        <span class="text-[11px] font-bold text-indigo-300 block mb-2">Zabezpieczenie w przyłączu</span>
+        <div class="g c5">
+          <div><label class="lbl ctr">In [A]</label><input type="text" id="p9_in_2" value="16" class="glass-input inp t"></div>
+          <div><label class="lbl ctr">k</label><input type="text" id="p9_k_2" value="5" class="glass-input inp t"></div>
+          <div><label class="lbl ctr">Ia [A]</label><input type="text" id="p9_ia_2" class="glass-input inp t"></div>
+          <div><label class="lbl ctr">Zs zmierzona [Ω]</label><input type="text" inputmode="decimal" id="p9_zsm_2" class="glass-input inp t b"></div>
+          <div><label class="lbl ctr">Zs dop. [Ω]</label><input type="text" id="p9_zsd_2" class="glass-input inp t b am"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div id="viewEditor" class="hidden space-y-3">
+  <div class="glass-panel rounded-2xl p-3 flex flex-wrap justify-between items-center gap-2.5">
+    <div class="flex items-center gap-2">
+      <button onclick="changePage(-1)" class="w-10 h-10 rounded-xl bg-slate-800 active:scale-95 font-extrabold">◀</button>
+      <span id="pageNumberDisplay" class="text-xs font-mono font-extrabold text-amber-400 px-2">Strona 1 / 6</span>
+      <button onclick="changePage(1)" class="w-10 h-10 rounded-xl bg-slate-800 active:scale-95 font-extrabold">▶</button>
+    </div>
+    <div class="flex items-center gap-2">
+      <span id="desktopActiveField" class="hidden md:inline text-slate-400 font-mono text-xs">Chwyć kafelek lub skreślenie</span>
+      <button onclick="przywrocWspolrzedne()" class="bg-slate-800 text-slate-300 font-bold px-3 py-2 rounded-xl text-xs">🔄 Resetuj</button>
+      <button onclick="zapiszMatryce()" class="bg-indigo-600 active:scale-95 font-bold px-3.5 py-2 rounded-xl text-xs shadow-lg">💾 Zapisz matrycę</button>
+    </div>
+  </div>
+  <div class="flex justify-center overflow-auto p-2 sm:p-4 bg-slate-950 rounded-2xl border border-slate-800/80 min-h-[500px]">
+    <div id="canvasWrapper" class="relative shadow-2xl bg-white rounded-lg overflow-hidden">
+      <canvas id="pdfCanvas" class="block"></canvas>
+      <div id="dragLayer" class="absolute inset-0 overflow-hidden pointer-events-auto"></div>
+    </div>
+  </div>
+</div>
+</main>
+
+<div id="modalHistoria" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6">
+  <div class="glass-panel w-full max-w-2xl rounded-3xl p-5 shadow-2xl flex flex-col max-h-[85vh]">
+    <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
+      <h3 class="text-sm font-extrabold text-amber-400 uppercase tracking-wider">📚 Archiwum protokołów</h3>
+      <button onclick="zamknijHistorie()" class="text-slate-400 font-bold text-lg px-2">✕</button>
+    </div>
+    <div id="historiaLista" class="flex-1 overflow-auto space-y-2 pr-1"></div>
+    <div class="pt-4 border-t border-slate-800 flex justify-between items-center text-xs">
+      <button onclick="wyczyscCalaHistorie()" class="text-rose-400">Wyczyść archiwum</button>
+      <button onclick="zamknijHistorie()" class="bg-slate-800 font-bold px-4 py-2 rounded-xl">Zamknij</button>
+    </div>
+  </div>
+</div>
+
+<nav class="sm:hidden fixed bottom-0 left-0 right-0 z-40 glass-panel border-t border-slate-800/80 px-6 py-2.5 flex justify-around">
+  <button onclick="switchTab('form')" id="mTabForm" class="flex flex-col items-center gap-1 text-indigo-400 font-bold text-[11px]"><span class="text-base">📋</span>Dane</button>
+  <button onclick="switchTab('editor')" id="mTabEditor" class="flex flex-col items-center gap-1 text-slate-400 font-bold text-[11px]"><span class="text-base">🎯</span>Podgląd PDF</button>
+</nav>
+
+<div id="mobileDpad" class="hidden fixed bottom-16 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 glass-panel p-3 rounded-2xl shadow-2xl border border-indigo-500/30 flex items-center gap-3">
+  <div>
+    <div class="text-[10px] text-slate-400 font-mono" id="dpadLabel">Wybrane: brak</div>
+    <div class="flex items-center gap-1 mt-1">
+      <button onclick="setNudgeStep(1)" id="step1Btn" class="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-600 text-white">1px</button>
+      <button onclick="setNudgeStep(5)" id="step5Btn" class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400">5px</button>
+      <button onclick="setNudgeStep(10)" id="step10Btn" class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-400">10px</button>
+    </div>
+  </div>
+  <div class="grid grid-cols-3 gap-1">
+    <div></div><button onclick="nudge(0,-currentNudgeStep)" class="w-9 h-9 rounded-lg bg-slate-800 font-black text-xs">▲</button><div></div>
+    <button onclick="nudge(-currentNudgeStep,0)" class="w-9 h-9 rounded-lg bg-slate-800 font-black text-xs">◀</button>
+    <button onclick="deselectActiveBox()" class="w-9 h-9 rounded-lg bg-rose-500/20 text-rose-300 font-black text-[10px]">✕</button>
+    <button onclick="nudge(currentNudgeStep,0)" class="w-9 h-9 rounded-lg bg-slate-800 font-black text-xs">▶</button>
+    <div></div><button onclick="nudge(0,currentNudgeStep)" class="w-9 h-9 rounded-lg bg-slate-800 font-black text-xs">▼</button><div></div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script src="ulepszenia.js"></script>
+<script>
+  // domyślne wartości PE z app.js nie mogą trafić do protokołu jako "zmierzone"
+  document.querySelectorAll("#peContainer input").forEach(i => i.value = "");
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
+</script>
 </body>
 </html>
